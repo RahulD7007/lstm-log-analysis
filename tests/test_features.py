@@ -2,14 +2,15 @@
 
 import tempfile
 from pathlib import Path
+
 import numpy as np
 
+from src.config import PAD_INDEX, UNK_INDEX
 from src.features import (
     EventVocabulary,
     create_sliding_windows,
     process_and_split_sessions,
 )
-from src.config import PAD_INDEX, UNK_INDEX
 
 
 def test_vocabulary_encoding_decoding():

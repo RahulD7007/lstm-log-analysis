@@ -18,7 +18,6 @@ if str(PROJ_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJ_ROOT))
 
 import pandas as pd
-import numpy as np
 
 from src.dataset import (
     generate_synthetic_benchmark_dataset,
@@ -27,13 +26,13 @@ from src.dataset import (
 from src.features import (
     process_and_split_sessions,
 )
+from src.modeling.predict import (
+    evaluate_precomputed_sessions,
+    precompute_test_session_predictions,
+    predict_single_sequence,
+)
 from src.modeling.train import (
     build_deeplog_lstm_model,
-)
-from src.modeling.predict import (
-    precompute_test_session_predictions,
-    evaluate_precomputed_sessions,
-    predict_single_sequence,
 )
 
 

@@ -1,9 +1,9 @@
 """Unit tests for dataset generation, parsing, and session grouping."""
 
 from src.dataset import (
-    parse_log_line,
-    generate_synthetic_benchmark_dataset,
     HDFS_TEMPLATES,
+    generate_synthetic_benchmark_dataset,
+    parse_log_line,
 )
 
 

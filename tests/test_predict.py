@@ -1,13 +1,14 @@
 """Unit tests for inference, top-k candidate logic, and metric calculations."""
 
 import numpy as np
+
 from src.features import EventVocabulary
-from src.modeling.train import build_deeplog_lstm_model
 from src.modeling.predict import (
-    predict_window_anomaly,
-    predict_single_sequence,
     evaluate_precomputed_sessions,
+    predict_single_sequence,
+    predict_window_anomaly,
 )
+from src.modeling.train import build_deeplog_lstm_model
 
 
 def test_predict_window_anomaly_top_k():

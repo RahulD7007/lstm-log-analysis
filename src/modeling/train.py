@@ -9,7 +9,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Tuple
+from typing import Any
 
 # Suppress excessive TensorFlow runtime logs
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -26,28 +26,28 @@ from tensorflow import keras
 from tensorflow.keras import layers
 
 from src.config import (
+    BATCH_SIZE,
+    DENSE_UNITS,
+    DROPOUT_RATE,
+    EARLY_STOPPING_PATIENCE,
+    EMBEDDING_DIM,
+    EPOCHS,
+    FIGURES_DIR,
+    LEARNING_RATE,
+    LSTM_UNITS,
+    METADATA_SAVE_PATH,
+    MODEL_SAVE_PATH,
+    MODELS_DIR,
+    NUM_LSTM_LAYERS,
+    RANDOM_SEED,
+    REDUCE_LR_PATIENCE,
+    TOP_K,
     TRAIN_X_FILE,
     TRAIN_Y_FILE,
     VAL_X_FILE,
     VAL_Y_FILE,
     VOCAB_FILE,
-    MODELS_DIR,
-    MODEL_SAVE_PATH,
-    METADATA_SAVE_PATH,
-    FIGURES_DIR,
     WINDOW_SIZE,
-    TOP_K,
-    EMBEDDING_DIM,
-    LSTM_UNITS,
-    NUM_LSTM_LAYERS,
-    DENSE_UNITS,
-    DROPOUT_RATE,
-    LEARNING_RATE,
-    BATCH_SIZE,
-    EPOCHS,
-    EARLY_STOPPING_PATIENCE,
-    REDUCE_LR_PATIENCE,
-    RANDOM_SEED,
     ensure_directories,
 )
 from src.features import EventVocabulary
@@ -139,7 +139,7 @@ def train_model(
     lstm_units: int = LSTM_UNITS,
     dropout_rate: float = DROPOUT_RATE,
     top_k: int = TOP_K,
-) -> Tuple[keras.Model, keras.callbacks.History]:
+) -> tuple[keras.Model, keras.callbacks.History]:
     """Execute model training with early stopping, checkpointing, and LR decay."""
     ensure_directories()
     tf.random.set_seed(RANDOM_SEED)
@@ -250,7 +250,7 @@ def main(epochs: int, batch_size: int, lr: float, lstm_units: int, top_k: int) -
     click.echo(f"Training progression curves saved to: {curve_path}")
 
     # Save training metadata
-    metadata: Dict[str, Any] = {
+    metadata: dict[str, Any] = {
         "timestamp": datetime.utcnow().isoformat(),
         "vocab_size": vocab.size,
         "window_size": int(x_train.shape[1]),

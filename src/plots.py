@@ -6,7 +6,6 @@ confusion matrices, top-k sensitivity, and anomaly score separation.
 
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Any
 
 # Ensure project root is on sys.path
 PROJ_DIR = Path(__file__).resolve().parent.parent
@@ -17,11 +16,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from sklearn.metrics import (
-    confusion_matrix,
-    roc_curve,
     auc,
-    precision_recall_curve,
     average_precision_score,
+    confusion_matrix,
+    precision_recall_curve,
+    roc_curve,
 )
 
 from src.config import FIGURES_DIR, ensure_directories
@@ -41,8 +40,8 @@ plt.rcParams.update({
 
 
 def plot_training_history(
-    history_dict: Dict[str, List[float]],
-    save_path: Optional[Path] = None,
+    history_dict: dict[str, list[float]],
+    save_path: Path | None = None,
 ) -> Path:
     """Plot training and validation loss and accuracy trajectories.
 
@@ -91,10 +90,10 @@ def plot_training_history(
 
 
 def plot_confusion_matrix_heatmap(
-    y_true: List[int],
-    y_pred: List[int],
-    save_path: Optional[Path] = None,
-    class_names: Optional[List[str]] = None,
+    y_true: list[int],
+    y_pred: list[int],
+    save_path: Path | None = None,
+    class_names: list[str] | None = None,
 ) -> Path:
     """Plot an annotated confusion matrix heatmap.
 
@@ -145,9 +144,9 @@ def plot_confusion_matrix_heatmap(
 
 
 def plot_roc_and_pr_curves(
-    y_true: List[int],
-    anomaly_scores: List[float],
-    save_path: Optional[Path] = None,
+    y_true: list[int],
+    anomaly_scores: list[float],
+    save_path: Path | None = None,
 ) -> Path:
     """Plot both ROC and Precision-Recall curves side by side.
 
@@ -199,11 +198,11 @@ def plot_roc_and_pr_curves(
 
 
 def plot_top_k_sensitivity(
-    k_values: List[int],
-    precisions: List[float],
-    recalls: List[float],
-    f1_scores: List[float],
-    save_path: Optional[Path] = None,
+    k_values: list[int],
+    precisions: list[float],
+    recalls: list[float],
+    f1_scores: list[float],
+    save_path: Path | None = None,
 ) -> Path:
     """Plot metric sensitivity as top-k candidate parameter varies.
 
@@ -241,10 +240,10 @@ def plot_top_k_sensitivity(
 
 
 def plot_anomaly_score_distribution(
-    normal_scores: List[float],
-    anomaly_scores: List[float],
+    normal_scores: list[float],
+    anomaly_scores: list[float],
     threshold: float = 0.5,
-    save_path: Optional[Path] = None,
+    save_path: Path | None = None,
 ) -> Path:
     """Plot separation between normal and anomalous session score distributions.
 

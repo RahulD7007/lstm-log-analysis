@@ -3,10 +3,17 @@
 #################################################################################
 
 PROJECT_NAME = lstm-log-analysis
-PYTHON_INTERPRETER = python3
+PYTHON_INTERPRETER = python
 VENV_DIR = .venv
-VENV_PYTHON = $(VENV_DIR)/bin/python
-VENV_PIP = $(VENV_DIR)/bin/pip
+
+# Detect OS to handle virtual environment executable paths correctly
+ifeq ($(OS),Windows_NT)
+    VENV_PYTHON = $(VENV_DIR)/Scripts/python.exe
+    VENV_PIP = $(VENV_DIR)/Scripts/pip.exe
+else
+    VENV_PYTHON = $(VENV_DIR)/bin/python
+    VENV_PIP = $(VENV_DIR)/bin/pip
+endif
 
 #################################################################################
 # COMMANDS                                                                      #
@@ -53,10 +60,7 @@ lint: ## Check source code formatting and style
 	$(VENV_PYTHON) -m flake8 src/ tests/ --count --select=E9,F63,F7,F82 --show-source --statistics
 
 clean: ## Clean up generated temporary files, caches, and build artifacts
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
-	find . -type d -name ".pytest_cache" -delete
-	find . -type d -name "*.egg-info" -exec rm -rf {} +
+	$(PYTHON_INTERPRETER) -c "import pathlib, shutil; [p.unlink() for p in pathlib.Path('.').rglob('*.py[co]')]; [shutil.rmtree(p) for p in pathlib.Path('.').rglob('__pycache__')]; [shutil.rmtree(p) for p in pathlib.Path('.').rglob('.pytest_cache') if p.is_dir()]; [shutil.rmtree(p) for p in pathlib.Path('.').rglob('*.egg-info') if p.is_dir()]"
 	@echo ">>> Temporary artifacts cleaned."
 
 all: data features train predict test ## Run full pipeline from data ingestion to test suite

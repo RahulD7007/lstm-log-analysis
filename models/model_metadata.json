@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-20T08:37:25.257574",
+  "timestamp": "2026-09-27T06:04:20.492373",
   "vocab_size": 26,
   "window_size": 10,
-  "epochs_trained": 15,
-  "final_train_loss": 0.0004407209635246545,
-  "final_val_loss": 2.5699859179439954e-05,
+  "epochs_trained": 7,
+  "final_train_loss": 0.00520264683291316,
+  "final_val_loss": 0.0009813474025577307,
   "final_train_accuracy": 1.0,
   "final_val_accuracy": 1.0,
   "hyperparameters": {

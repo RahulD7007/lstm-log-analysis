@@ -1,7 +1,7 @@
 """Unit tests for LSTM model construction, compilation, and tensor shapes."""
 
 import numpy as np
-import tensorflow as tf
+
 from src.modeling.train import build_deeplog_lstm_model
 
 

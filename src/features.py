@@ -8,7 +8,7 @@ import json
 import random
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Any
 
 # Ensure project root is on sys.path
 PROJ_DIR = Path(__file__).resolve().parent.parent
@@ -19,24 +19,24 @@ import click
 import numpy as np
 
 from src.config import (
-    SESSION_SEQUENCES_FILE,
+    PAD_INDEX,
+    PAD_TOKEN,
     PROCESSED_DATA_DIR,
-    VOCAB_FILE,
-    TRAIN_X_FILE,
-    TRAIN_Y_FILE,
-    VAL_X_FILE,
-    VAL_Y_FILE,
+    RANDOM_SEED,
+    SESSION_SEQUENCES_FILE,
+    TEST_SESSIONS_FILE,
     TEST_X_FILE,
     TEST_Y_FILE,
-    TEST_SESSIONS_FILE,
-    WINDOW_SIZE,
     TRAIN_SPLIT,
-    VAL_SPLIT,
-    RANDOM_SEED,
-    PAD_TOKEN,
-    UNK_TOKEN,
-    PAD_INDEX,
+    TRAIN_X_FILE,
+    TRAIN_Y_FILE,
     UNK_INDEX,
+    UNK_TOKEN,
+    VAL_SPLIT,
+    VAL_X_FILE,
+    VAL_Y_FILE,
+    VOCAB_FILE,
+    WINDOW_SIZE,
     ensure_directories,
 )
 
@@ -47,10 +47,10 @@ class EventVocabulary:
     def __init__(self, pad_token: str = PAD_TOKEN, unk_token: str = UNK_TOKEN) -> None:
         self.pad_token = pad_token
         self.unk_token = unk_token
-        self.token_to_idx: Dict[str, int] = {pad_token: PAD_INDEX, unk_token: UNK_INDEX}
-        self.idx_to_token: Dict[int, str] = {PAD_INDEX: pad_token, UNK_INDEX: unk_token}
+        self.token_to_idx: dict[str, int] = {pad_token: PAD_INDEX, unk_token: UNK_INDEX}
+        self.idx_to_token: dict[int, str] = {PAD_INDEX: pad_token, UNK_INDEX: unk_token}
 
-    def build_vocab(self, event_sequences: List[List[str]]) -> None:
+    def build_vocab(self, event_sequences: list[list[str]]) -> None:
         """Construct vocabulary from unique event tokens across all sequences."""
         unique_tokens = sorted(list({token for seq in event_sequences for token in seq}))
         for token in unique_tokens:
@@ -72,7 +72,7 @@ class EventVocabulary:
         """Return the total number of distinct tokens."""
         return len(self.token_to_idx)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize vocabulary to dictionary."""
         return {
             "token_to_idx": self.token_to_idx,
@@ -85,7 +85,7 @@ class EventVocabulary:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "EventVocabulary":
+    def from_dict(cls, data: dict[str, Any]) -> "EventVocabulary":
         """Instantiate vocabulary from serialized dictionary."""
         vocab = cls(pad_token=data["pad_token"], unk_token=data["unk_token"])
         vocab.token_to_idx = {k: int(v) for k, v in data["token_to_idx"].items()}
@@ -106,10 +106,10 @@ class EventVocabulary:
 
 
 def create_sliding_windows(
-    token_sequence: List[int],
+    token_sequence: list[int],
     window_size: int = WINDOW_SIZE,
     pad_index: int = PAD_INDEX,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     """Generate sliding window input/output pairs (x, y) from an integer sequence.
 
     Args:
@@ -128,8 +128,8 @@ def create_sliding_windows(
     else:
         seq = token_sequence
 
-    x_list: List[List[int]] = []
-    y_list: List[int] = []
+    x_list: list[list[int]] = []
+    y_list: list[int] = []
 
     for i in range(len(seq) - window_size):
         x_window = seq[i : i + window_size]
@@ -141,12 +141,12 @@ def create_sliding_windows(
 
 
 def process_and_split_sessions(
-    sessions: Dict[str, Dict[str, Any]],
+    sessions: dict[str, dict[str, Any]],
     window_size: int = WINDOW_SIZE,
     train_split: float = TRAIN_SPLIT,
     val_split: float = VAL_SPLIT,
     seed: int = RANDOM_SEED,
-) -> Tuple[
+) -> tuple[
     np.ndarray,
     np.ndarray,
     np.ndarray,
@@ -154,7 +154,7 @@ def process_and_split_sessions(
     np.ndarray,
     np.ndarray,
     EventVocabulary,
-    Dict[str, Any],
+    dict[str, Any],
 ]:
     """Execute session-isolated splitting and window creation.
 
@@ -166,8 +166,8 @@ def process_and_split_sessions(
     random.seed(seed)
     np.random.seed(seed)
 
-    normal_sessions: List[Tuple[str, List[str]]] = []
-    anomaly_sessions: List[Tuple[str, List[str]]] = []
+    normal_sessions: list[tuple[str, list[str]]] = []
+    anomaly_sessions: list[tuple[str, list[str]]] = []
 
     for block_id, s_data in sessions.items():
         if s_data["label"] == "Normal":
@@ -225,7 +225,7 @@ def process_and_split_sessions(
     y_test = np.concatenate(y_test_list) if y_test_list else np.empty((0,), dtype=np.int32)
 
     # Package test sessions for end-to-end evaluation in predict.py
-    test_sessions_dict: Dict[str, Any] = {}
+    test_sessions_dict: dict[str, Any] = {}
     for block_id, events in test_normal:
         test_sessions_dict[block_id] = {
             "events": events,

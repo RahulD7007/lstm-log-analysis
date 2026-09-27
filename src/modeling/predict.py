@@ -9,7 +9,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Any
 
 # Suppress verbose TensorFlow logs
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -21,34 +21,33 @@ if str(PROJ_DIR) not in sys.path:
 
 import click
 import numpy as np
-import tensorflow as tf
-from tensorflow import keras
 from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
-    accuracy_score,
-    confusion_matrix,
     roc_auc_score,
-    average_precision_score,
 )
+from tensorflow import keras
 
 from src.config import (
-    MODEL_SAVE_PATH,
-    VOCAB_FILE,
-    TEST_SESSIONS_FILE,
     EVALUATION_METRICS_FILE,
     FIGURES_DIR,
-    WINDOW_SIZE,
+    MODEL_SAVE_PATH,
+    TEST_SESSIONS_FILE,
     TOP_K,
+    VOCAB_FILE,
+    WINDOW_SIZE,
     ensure_directories,
 )
 from src.features import EventVocabulary, create_sliding_windows
 from src.plots import (
+    plot_anomaly_score_distribution,
     plot_confusion_matrix_heatmap,
     plot_roc_and_pr_curves,
     plot_top_k_sensitivity,
-    plot_anomaly_score_distribution,
 )
 
 
@@ -64,7 +63,7 @@ def predict_window_anomaly(
     x_window: np.ndarray,
     actual_next_event: int,
     top_k: int = TOP_K,
-) -> Tuple[bool, float, List[int], float]:
+) -> tuple[bool, float, list[int], float]:
     """Evaluate a single history window against top-k next event candidate predictions.
 
     Args:
@@ -94,10 +93,10 @@ def predict_window_anomaly(
 def predict_single_sequence(
     model: keras.Model,
     vocab: EventVocabulary,
-    event_sequence: List[str],
+    event_sequence: list[str],
     window_size: int = WINDOW_SIZE,
     top_k: int = TOP_K,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Perform real-time anomaly diagnosis on an ad-hoc sequence of event strings.
 
     Args:
@@ -129,8 +128,7 @@ def predict_single_sequence(
         top_k_ids = np.argsort(prob_dist)[::-1][:top_k].tolist()
         actual_prob = float(prob_dist[actual]) if actual < len(prob_dist) else 0.0
         score = float(1.0 - actual_prob)
-        if score > max_score:
-            max_score = score
+        max_score = max(max_score, score)
 
         is_step_anom = actual not in top_k_ids
         if is_step_anom:
@@ -154,17 +152,17 @@ def predict_single_sequence(
 
 def precompute_test_session_predictions(
     model: keras.Model,
-    test_sessions: Dict[str, Dict[str, Any]],
+    test_sessions: dict[str, dict[str, Any]],
     window_size: int = WINDOW_SIZE,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Precompute model probabilities for all test sessions in a single batched pass.
 
     This enables instant evaluation and threshold sweeps across any number
     of top-k candidate values without re-invoking the neural network.
     """
     session_items = list(test_sessions.items())
-    all_windows_list: List[np.ndarray] = []
-    session_slices: List[Tuple[str, int, int, np.ndarray, int]] = []
+    all_windows_list: list[np.ndarray] = []
+    session_slices: list[tuple[str, int, int, np.ndarray, int]] = []
 
     current_idx = 0
     for block_id, s_data in session_items:
@@ -184,7 +182,7 @@ def precompute_test_session_predictions(
     else:
         prob_all = np.empty((0, 0))
 
-    precomputed_sessions: List[Dict[str, Any]] = []
+    precomputed_sessions: list[dict[str, Any]] = []
     for block_id, start_idx, end_idx, targets, is_anom in session_slices:
         if start_idx != -1 and end_idx > start_idx:
             probs = prob_all[start_idx:end_idx]
@@ -202,15 +200,15 @@ def precompute_test_session_predictions(
 
 
 def evaluate_precomputed_sessions(
-    precomputed: List[Dict[str, Any]],
+    precomputed: list[dict[str, Any]],
     top_k: int = TOP_K,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Vectorized session-level anomaly evaluation using precomputed probabilities."""
-    y_true: List[int] = []
-    y_pred: List[int] = []
-    anomaly_scores: List[float] = []
-    normal_scores: List[float] = []
-    anom_scores: List[float] = []
+    y_true: list[int] = []
+    y_pred: list[int] = []
+    anomaly_scores: list[float] = []
+    normal_scores: list[float] = []
+    anom_scores: list[float] = []
 
     for item in precomputed:
         ground_truth = item["ground_truth"]
@@ -289,9 +287,9 @@ def evaluate_precomputed_sessions(
 
 
 def run_top_k_sensitivity_sweep_fast(
-    precomputed: List[Dict[str, Any]],
-    k_candidates: List[int] = [1, 2, 3, 5, 9, 15],
-) -> Dict[str, List[float]]:
+    precomputed: list[dict[str, Any]],
+    k_candidates: list[int] = [1, 2, 3, 5, 9, 15],
+) -> dict[str, list[float]]:
     """Instant sensitivity sweep over precomputed probability tensors."""
     precisions, recalls, f1s = [], [], []
     for k in k_candidates:
@@ -311,7 +309,7 @@ def run_top_k_sensitivity_sweep_fast(
 @click.command()
 @click.option("--top-k", default=TOP_K, type=int, help="Number of predicted candidates considered normal.")
 @click.option("--model-path", default=None, type=click.Path(), help="Path to trained model .keras file.")
-def main(top_k: int, model_path: Optional[str]) -> None:
+def main(top_k: int, model_path: str | None) -> None:
     """CLI Entrypoint for Anomaly Detection Evaluation."""
     ensure_directories()
     click.echo("=" * 70)

@@ -1,24 +1,25 @@
 """Unit tests for configuration parameters and path management."""
 
 from pathlib import Path
+
 from src.config import (
-    PROJ_ROOT,
     DATA_DIR,
-    RAW_DATA_DIR,
-    INTERIM_DATA_DIR,
-    PROCESSED_DATA_DIR,
-    MODELS_DIR,
-    REPORTS_DIR,
+    EMBEDDING_DIM,
     FIGURES_DIR,
-    WINDOW_SIZE,
+    INTERIM_DATA_DIR,
+    LEARNING_RATE,
+    LSTM_UNITS,
+    MODELS_DIR,
+    NUM_LSTM_LAYERS,
+    PROCESSED_DATA_DIR,
+    PROJ_ROOT,
+    RAW_DATA_DIR,
+    REPORTS_DIR,
+    TEST_SPLIT,
     TOP_K,
     TRAIN_SPLIT,
     VAL_SPLIT,
-    TEST_SPLIT,
-    EMBEDDING_DIM,
-    LSTM_UNITS,
-    NUM_LSTM_LAYERS,
-    LEARNING_RATE,
+    WINDOW_SIZE,
     ensure_directories,
     get_config_dict,
 )

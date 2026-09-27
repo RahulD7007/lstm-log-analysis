@@ -5,7 +5,7 @@ production-grade hyperparameters for sequence modeling and anomaly detection.
 """
 
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any
 
 # =====================================================================
 # Directory Structure & File Paths (Cookiecutter Data Science v2)
@@ -104,7 +104,7 @@ def ensure_directories() -> None:
         directory.mkdir(parents=True, exist_ok=True)
 
 
-def get_config_dict() -> Dict[str, Any]:
+def get_config_dict() -> dict[str, Any]:
     """Return a dictionary of the configuration values for logging/metadata."""
     return {
         "WINDOW_SIZE": WINDOW_SIZE,

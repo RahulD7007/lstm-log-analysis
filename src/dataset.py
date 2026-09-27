@@ -10,7 +10,7 @@ import random
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Any
 
 # Ensure project root is on sys.path for direct script execution
 PROJ_DIR = Path(__file__).resolve().parent.parent
@@ -21,19 +21,18 @@ import click
 import pandas as pd
 
 from src.config import (
-    RAW_DATA_DIR,
     INTERIM_DATA_DIR,
-    RAW_LOG_FILE,
     LABEL_FILE,
     PARSED_EVENTS_FILE,
+    RANDOM_SEED,
+    RAW_LOG_FILE,
     SESSION_SEQUENCES_FILE,
     TEMPLATES_FILE,
-    RANDOM_SEED,
     ensure_directories,
 )
 
 # Canonical benchmark log templates derived from HDFS and distributed systems
-HDFS_TEMPLATES: List[Dict[str, str]] = [
+HDFS_TEMPLATES: list[dict[str, str]] = [
     {
         "EventId": "E1",
         "Template": "Receiving block <*> src: <*> dest: <*>",
@@ -272,7 +271,7 @@ def generate_synthetic_benchmark_dataset(
     num_sessions: int = 4000,
     anomaly_ratio: float = 0.15,
     seed: int = RANDOM_SEED,
-) -> Tuple[List[str], List[Dict[str, str]]]:
+) -> tuple[list[str], list[dict[str, str]]]:
     """Generate a realistic, large-scale benchmark HDFS log dataset.
 
     Args:
@@ -284,8 +283,8 @@ def generate_synthetic_benchmark_dataset(
         A tuple of (raw_log_lines, session_labels).
     """
     random.seed(seed)
-    raw_log_lines: List[str] = []
-    session_labels: List[Dict[str, str]] = []
+    raw_log_lines: list[str] = []
+    session_labels: list[dict[str, str]] = []
 
     ip_pool = [
         "10.250.19.102",
@@ -398,7 +397,7 @@ def generate_synthetic_benchmark_dataset(
     return raw_log_lines, session_labels
 
 
-def parse_log_line(line: str) -> Optional[Dict[str, Any]]:
+def parse_log_line(line: str) -> dict[str, Any] | None:
     """Parse a single raw log string into structured components and event template.
 
     Format: Date Time Pid Level Component: Message
@@ -440,7 +439,7 @@ def parse_log_line(line: str) -> Optional[Dict[str, Any]]:
 def parse_raw_logs(
     raw_log_path: Path,
     label_path: Path,
-) -> Tuple[pd.DataFrame, Dict[str, Dict[str, Any]]]:
+) -> tuple[pd.DataFrame, dict[str, dict[str, Any]]]:
     """Parse raw unstructured log file and group into sequential telemetry sessions.
 
     Args:
@@ -450,7 +449,7 @@ def parse_raw_logs(
     Returns:
         A tuple of (parsed_events_df, session_dict).
     """
-    records: List[Dict[str, Any]] = []
+    records: list[dict[str, Any]] = []
 
     with open(raw_log_path, "r", encoding="utf-8") as f:
         for line in f:
@@ -461,13 +460,13 @@ def parse_raw_logs(
     df_events = pd.DataFrame(records)
 
     # Load session anomaly labels if present
-    labels_map: Dict[str, str] = {}
+    labels_map: dict[str, str] = {}
     if label_path.exists():
         df_labels = pd.read_csv(label_path)
         labels_map = dict(zip(df_labels["BlockId"], df_labels["Label"]))
 
     # Group by BlockId to reconstruct execution sequence
-    sessions: Dict[str, Dict[str, Any]] = {}
+    sessions: dict[str, dict[str, Any]] = {}
     for block_id, group in df_events.groupby("BlockId"):
         if block_id == "UNKNOWN_BLOCK":
             continue
@@ -484,7 +483,7 @@ def parse_raw_logs(
 
 def persist_interim_data(
     df_events: pd.DataFrame,
-    sessions: Dict[str, Dict[str, Any]],
+    sessions: dict[str, dict[str, Any]],
     interim_dir: Path = INTERIM_DATA_DIR,
 ) -> None:
     """Save parsed log events, session sequences, and template mapping to interim dir."""
@@ -528,7 +527,7 @@ def main(
     download_or_generate: bool,
     num_sessions: int,
     anomaly_ratio: float,
-    raw_path: Optional[str],
+    raw_path: str | None,
 ) -> None:
     """CLI Entrypoint for Dataset Preparation."""
     ensure_directories()
